@@ -5,11 +5,17 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"time"
 	"userrestapigo/models"
 	"userrestapigo/repository"
+	"userrestapigo/requests"
+	"userrestapigo/utils"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 )
+
+var validate = validator.New()
 
 /*
 * GetUsers handles the HTTP GET request to retrieve all users.
@@ -114,8 +120,16 @@ func GetUserByID(w http.ResponseWriter, r *http.Request) {
 @param r *http.Request - The HTTP request object containing request details.
 */
 func CreateUser(w http.ResponseWriter, r *http.Request) {
-	var user models.User
-	err := json.NewDecoder(r.Body).Decode(&user)
+	// Log the incoming request details
+	utils.Logger.Info(
+		"HTTP CreateUser request",
+		"method", r.Method,
+		"path", r.URL.Path,
+		"ip", r.RemoteAddr,
+		"user_agent", r.UserAgent(),
+	)
+	// Decode JSON request body into the CreateUserRequest struct
+	req, err := requests.DecodeCreateUserRequest(r)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
@@ -124,8 +138,68 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 			Status:  false,
 			Message: "Invalid request payload",
 			Data:    nil,
+			Error:   err.Error(),
 		})
 		return
+	}
+	// create user request log
+	utils.Logger.Info(
+		"Create user request",
+		"email", req.Email,
+		"name", req.Name,
+		"gender", req.Gender,
+		"birthdate", req.Birthdate,
+		"is_active", req.IsActive,
+	)
+
+	// Validate the request struct using the validator package
+	if err := validate.Struct(req); err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+
+		json.NewEncoder(w).Encode(models.APIResponse{
+			Status:  false,
+			Message: "Validation failed",
+			Data:    nil,
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	// Business validation
+	if req.Password != req.ConfirmPassword {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+
+		json.NewEncoder(w).Encode(models.APIResponse{
+			Status:  false,
+			Message: "Password and Confirm Password do not match",
+			Data:    nil,
+		})
+		return
+	}
+
+	// parse birthdate string to time.Time
+	birthDate, err := time.Parse("2006-01-02", req.Birthdate)
+	if err != nil {
+		utils.Logger.Error("Invalid birthdate format", "error", err)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(models.APIResponse{
+			Status:  false,
+			Message: "Birthdate must be in YYYY-MM-DD format",
+			Data:    nil,
+		})
+		return
+	}
+
+	// Convert request to model
+	user := models.User{
+		Name:      req.Name,
+		Email:     req.Email,
+		Gender:    req.Gender,
+		Birthdate: birthDate,
+		IsActive:  req.IsActive,
+		Password:  req.Password, // Hash before saving
 	}
 
 	id, err := repository.CreateUser(user)
@@ -137,6 +211,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 			Status:  false,
 			Message: "Error creating user",
 			Data:    nil,
+			Error:   err.Error(),
 		})
 		return
 	}

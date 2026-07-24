@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"userrestapigo/config"
+	"userrestapigo/database"
 	"userrestapigo/models"
 )
 
@@ -19,7 +19,7 @@ func CreateUser(user models.User) (int, error) {
 		VALUES (?, ?, ?, ?, ?, ?)
 	`
 	// execute the SQL query with the provided user data
-	result, err := config.DB.Exec(
+	result, err := database.DB.Exec(
 		query,
 		user.Name,
 		user.Email,
@@ -28,14 +28,17 @@ func CreateUser(user models.User) (int, error) {
 		user.Gender,
 		user.Password,
 	)
-
-	LastInsertId, err := result.LastInsertId()
 	if err != nil {
 		return 0, err
 	}
 
-	user.ID = int(LastInsertId)
-	return 0, err
+	lastInsertID, err := result.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	user.ID = int(lastInsertID)
+	return user.ID, nil
 }
 
 /*
@@ -50,7 +53,7 @@ func GetUsers() ([]models.User, error) {
 		SELECT id, name, email, is_active, birthdate, gender, created_at, updated_at
 		FROM users
 	`
-	rows, err := config.DB.Query(query)
+	rows, err := database.DB.Query(query)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +91,7 @@ func GetUserByID(id int) (models.User, error) {
 		FROM users
 		WHERE id = ?
 	`
-	err := config.DB.QueryRow(query, id).Scan(&user.ID, &user.Name, &user.Email, &user.IsActive, &user.Birthdate, &user.Gender, &user.CreatedAt, &user.UpdatedAt)
+	err := database.DB.QueryRow(query, id).Scan(&user.ID, &user.Name, &user.Email, &user.IsActive, &user.Birthdate, &user.Gender, &user.CreatedAt, &user.UpdatedAt)
 	if err != nil {
 		return user, err
 	}
@@ -107,7 +110,7 @@ func UpdateUser(user models.User) error {
 		SET name = ?, email = ?, is_active = ?, birthdate = ?, gender = ?, password = ?, updated_at = NOW()
 		WHERE id = ?
 	`
-	_, err := config.DB.Exec(
+	_, err := database.DB.Exec(
 		query,
 		user.Name,
 		user.Email,
@@ -132,6 +135,26 @@ func DeleteUser(id int) error {
 		DELETE FROM users
 		WHERE id = ?
 	`
-	_, err := config.DB.Exec(query, id)
+	_, err := database.DB.Exec(query, id)
 	return err
+}
+
+/*
+* EmailExists checks if a user with the given email already exists in the database.
+* It takes a string email as input and returns a boolean indicating existence and an error if the operation fails.
+@param email string - The email address to check for existence in the database.
+@return bool - Returns true if the email exists, false otherwise.
+@return error - Returns an error if the database operation fails, otherwise returns nil.
+*/
+func EmailExists(email string) (bool, error) {
+	var count int
+
+	query := `SELECT COUNT(*) FROM users WHERE email = ?`
+
+	err := database.DB.QueryRow(query, email).Scan(&count)
+	if err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
 }
