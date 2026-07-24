@@ -33,6 +33,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 			Status:  false,
 			Message: "Failed to fetch users.",
 			Data:    nil,
+			Error:   err.Error(),
 		})
 		return
 	}
@@ -75,6 +76,7 @@ func GetUserByID(w http.ResponseWriter, r *http.Request) {
 			Status:  false,
 			Message: "Invalid user ID",
 			Data:    nil,
+			Error:   err.Error(),
 		})
 		return
 	}
@@ -188,6 +190,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 			Status:  false,
 			Message: "Birthdate must be in YYYY-MM-DD format",
 			Data:    nil,
+			Error:   err.Error(),
 		})
 		return
 	}

@@ -22,3 +22,14 @@ func UniqueEmail(fl validator.FieldLevel) bool {
 
 	return !exists
 }
+
+func BirthDateValidation(fl validator.FieldLevel) bool {
+	birthDate := fl.Field().String()
+
+	exists, err := repository.BirthDateExists(birthDate)
+	if err != nil {
+		return false
+	}
+
+	return !exists
+}
