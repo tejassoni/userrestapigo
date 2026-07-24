@@ -1,17 +1,57 @@
-CREATE DATABASE IF NOT EXISTS `users_api` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+package config
 
-use `users_api`;
+import (
+	"database/sql"
+	"fmt"
+	"log"
+	"os"
+	"time"
 
-CREATE TABLE IF NOT EXISTS `users` (
-	`id` int(11) NOT NULL AUTO_INCREMENT,
-	`name` varchar(255) NOT NULL,
-	`email` varchar(255) NOT NULL,
-	`is_active` tinyint(1) NOT NULL DEFAULT '1',
-	`birthdate` date NOT NULL,
-	`gender` enum('male','female','other') NOT NULL,
-	`password` varchar(255) NOT NULL,
-	`created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	`updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-	PRIMARY KEY (`id`),
-	UNIQUE KEY `email` (`email`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/joho/godotenv"
+)
+
+var DB *sql.DB
+
+/* LoadEnv loads environment variables from a .env file */
+func LoadEnv() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+}
+
+/* ConnectDB establishes a connection to the database using environment variables */
+func ConnectDB() {
+
+	// Load environment variables
+	LoadEnv()
+	dbUser := os.Getenv("DB_USER")
+	dbPassword := os.Getenv("DB_PASSWORD")
+	dbHost := os.Getenv("DB_HOST")
+	dbPort := os.Getenv("DB_PORT")
+	dbName := os.Getenv("DB_NAME")
+
+	// Create the DSN (Data Source Name) for MySQL connection
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", dbUser, dbPassword, dbHost, dbPort, dbName)
+
+	// Open a connection to the database
+	var err error
+	DB, err = sql.Open("mysql", dsn)
+	if err != nil {
+		log.Fatal("Error opening database connection: ", err)
+	}
+
+	// Set connection pool settings
+	DB.SetConnMaxLifetime(time.Minute * 5) // Set the maximum amount of time a connection may be reused (Time : 5 minutes)
+	DB.SetConnMaxIdleTime(time.Minute * 2) // Set the maximum amount of time a connection may be idle (Time : 2 minutes)
+	DB.SetMaxOpenConns(10)                 // Set the maximum number of open connections (Connection : 10)
+	DB.SetMaxIdleConns(10)                 // Set the maximum number of idle connections (Connection : 10)
+
+	err = DB.Ping()
+	if err != nil {
+		log.Fatal("Error pinging database: ", err)
+	}
+
+	log.Println("Successfully connected to the database")
+}
