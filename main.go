@@ -15,5 +15,9 @@ func main() {
 	router := mux.NewRouter()     // Create a new router using Gorilla Mux
 	routes.RegisterRoutes(router) // Register the routes for the application
 
-	log.Fatal(http.ListenAndServe(":8080", router)) // Start the HTTP server on port 8080 and log any fatal errors
+	log.Println("Server started on http://localhost:8080") // Log the server start message
+
+	if err := http.ListenAndServe(":8080", router); err != nil {
+		log.Fatal(err)
+	}
 }

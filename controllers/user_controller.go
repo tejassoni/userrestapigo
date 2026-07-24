@@ -20,12 +20,35 @@ import (
 func GetUsers(w http.ResponseWriter, r *http.Request) {
 	users, err := repository.GetUsers()
 	if err != nil {
-		http.Error(w, "Error fetching users: "+err.Error(), http.StatusInternalServerError)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+
+		json.NewEncoder(w).Encode(models.APIResponse{
+			Status:  false,
+			Message: "Failed to fetch users.",
+			Data:    nil,
+		})
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(users)
+	w.WriteHeader(http.StatusOK)
+
+	// users empty then no records found
+	if len(users) == 0 {
+		json.NewEncoder(w).Encode(models.APIResponse{
+			Status:  true,
+			Message: "User Records no found...! Please create new user records.",
+			Data:    nil,
+		})
+		return
+	} else {
+		json.NewEncoder(w).Encode(models.APIResponse{
+			Status:  true,
+			Message: "Users fetched successfully.",
+			Data:    users,
+		})
+	}
 }
 
 /*
@@ -67,19 +90,40 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	var user models.User
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
-		http.Error(w, "Invalid request payload: "+err.Error(), http.StatusBadRequest)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+
+		json.NewEncoder(w).Encode(models.APIResponse{
+			Status:  false,
+			Message: "Invalid request payload",
+			Data:    nil,
+		})
 		return
 	}
 
 	id, err := repository.CreateUser(user)
 	if err != nil {
-		http.Error(w, "Error creating user: "+err.Error(), http.StatusInternalServerError)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+
+		json.NewEncoder(w).Encode(models.APIResponse{
+			Status:  false,
+			Message: "Error creating user",
+			Data:    nil,
+		})
 		return
 	}
-	user.ID = id
 
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(user)
+
+	json.NewEncoder(w).Encode(models.APIResponse{
+		Status:  true,
+		Message: "User created successfully.",
+		Data: map[string]int{
+			"id": id,
+		},
+	})
 }
 
 /*
