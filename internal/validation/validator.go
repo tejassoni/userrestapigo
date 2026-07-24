@@ -1,7 +1,7 @@
-package validators
+package validation
 
 import (
-	"userrestapigo/repository"
+	"userrestapigo/internal/repository"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -16,17 +16,6 @@ func UniqueEmail(fl validator.FieldLevel) bool {
 	email := fl.Field().String()
 
 	exists, err := repository.EmailExists(email)
-	if err != nil {
-		return false
-	}
-
-	return !exists
-}
-
-func BirthDateValidation(fl validator.FieldLevel) bool {
-	birthDate := fl.Field().String()
-
-	exists, err := repository.BirthDateExists(birthDate)
 	if err != nil {
 		return false
 	}

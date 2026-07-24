@@ -1,4 +1,4 @@
-package controllers
+package handlers
 
 import (
 	"database/sql"
@@ -6,10 +6,11 @@ import (
 	"net/http"
 	"strconv"
 	"time"
-	"userrestapigo/models"
-	"userrestapigo/repository"
-	"userrestapigo/requests"
-	"userrestapigo/utils"
+	"userrestapigo/internal/models"
+	"userrestapigo/internal/repository"
+	"userrestapigo/internal/requests"
+	"userrestapigo/internal/responses"
+	"userrestapigo/internal/utils"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
@@ -29,7 +30,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
 
-		json.NewEncoder(w).Encode(models.APIResponse{
+		json.NewEncoder(w).Encode(responses.APIResponse{
 			Status:  false,
 			Message: "Failed to fetch users.",
 			Data:    nil,
@@ -43,14 +44,14 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 
 	// users empty then no records found
 	if len(users) == 0 {
-		json.NewEncoder(w).Encode(models.APIResponse{
+		json.NewEncoder(w).Encode(responses.APIResponse{
 			Status:  true,
 			Message: "User Records no found...! Please create new user records.",
 			Data:    nil,
 		})
 		return
 	} else {
-		json.NewEncoder(w).Encode(models.APIResponse{
+		json.NewEncoder(w).Encode(responses.APIResponse{
 			Status:  true,
 			Message: "Users fetched successfully.",
 			Data:    users,
@@ -72,7 +73,7 @@ func GetUserByID(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 
-		json.NewEncoder(w).Encode(models.APIResponse{
+		json.NewEncoder(w).Encode(responses.APIResponse{
 			Status:  false,
 			Message: "Invalid user ID",
 			Data:    nil,
@@ -87,7 +88,7 @@ func GetUserByID(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusNotFound)
 
-			json.NewEncoder(w).Encode(models.APIResponse{
+			json.NewEncoder(w).Encode(responses.APIResponse{
 				Status:  false,
 				Message: "User not found",
 				Data:    nil,
@@ -96,7 +97,7 @@ func GetUserByID(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusInternalServerError)
 
-			json.NewEncoder(w).Encode(models.APIResponse{
+			json.NewEncoder(w).Encode(responses.APIResponse{
 				Status:  false,
 				Message: "Error fetching user",
 				Data:    nil,
@@ -108,7 +109,7 @@ func GetUserByID(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
-	json.NewEncoder(w).Encode(models.APIResponse{
+	json.NewEncoder(w).Encode(responses.APIResponse{
 		Status:  true,
 		Message: "User fetched successfully.",
 		Data:    user,
@@ -136,7 +137,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 
-		json.NewEncoder(w).Encode(models.APIResponse{
+		json.NewEncoder(w).Encode(responses.APIResponse{
 			Status:  false,
 			Message: "Invalid request payload",
 			Data:    nil,
@@ -159,7 +160,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 
-		json.NewEncoder(w).Encode(models.APIResponse{
+		json.NewEncoder(w).Encode(responses.APIResponse{
 			Status:  false,
 			Message: "Validation failed",
 			Data:    nil,
@@ -173,7 +174,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 
-		json.NewEncoder(w).Encode(models.APIResponse{
+		json.NewEncoder(w).Encode(responses.APIResponse{
 			Status:  false,
 			Message: "Password and Confirm Password do not match",
 			Data:    nil,
@@ -186,7 +187,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		utils.Logger.Error("Invalid birthdate format", "error", err)
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(models.APIResponse{
+		json.NewEncoder(w).Encode(responses.APIResponse{
 			Status:  false,
 			Message: "Birthdate must be in YYYY-MM-DD format",
 			Data:    nil,
@@ -210,7 +211,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
 
-		json.NewEncoder(w).Encode(models.APIResponse{
+		json.NewEncoder(w).Encode(responses.APIResponse{
 			Status:  false,
 			Message: "Error creating user",
 			Data:    nil,
@@ -222,7 +223,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 
-	json.NewEncoder(w).Encode(models.APIResponse{
+	json.NewEncoder(w).Encode(responses.APIResponse{
 		Status:  true,
 		Message: "User created successfully.",
 		Data: map[string]int{
