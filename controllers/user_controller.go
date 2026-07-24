@@ -62,22 +62,49 @@ func GetUserByID(w http.ResponseWriter, r *http.Request) {
 	idStr := vars["id"]
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		http.Error(w, "Invalid user ID", http.StatusBadRequest)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+
+		json.NewEncoder(w).Encode(models.APIResponse{
+			Status:  false,
+			Message: "Invalid user ID",
+			Data:    nil,
+		})
 		return
 	}
 
 	user, err := repository.GetUserByID(id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			http.Error(w, "User not found", http.StatusNotFound)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusNotFound)
+
+			json.NewEncoder(w).Encode(models.APIResponse{
+				Status:  false,
+				Message: "User not found",
+				Data:    nil,
+			})
 		} else {
-			http.Error(w, "Error fetching user: "+err.Error(), http.StatusInternalServerError)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusInternalServerError)
+
+			json.NewEncoder(w).Encode(models.APIResponse{
+				Status:  false,
+				Message: "Error fetching user",
+				Data:    nil,
+			})
 		}
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(user)
+	w.WriteHeader(http.StatusOK)
+
+	json.NewEncoder(w).Encode(models.APIResponse{
+		Status:  true,
+		Message: "User fetched successfully.",
+		Data:    user,
+	})
 }
 
 /*
