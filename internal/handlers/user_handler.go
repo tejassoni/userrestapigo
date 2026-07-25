@@ -26,17 +26,26 @@ var validate = validation.New()
 @param r *http.Request - The HTTP request object containing request details.
 */
 func GetUsers(w http.ResponseWriter, r *http.Request) {
+	logger.Logger.Info(
+		"HTTP GetUsers request",
+		"method", r.Method,
+		"path", r.URL.Path,
+		"ip", r.RemoteAddr,
+		"user_agent", r.UserAgent(),
+	)
 	users, err := repository.GetUsers()
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
-
+		// Return a JSON response indicating the error
 		json.NewEncoder(w).Encode(responses.APIResponse{
 			Status:  false,
 			Message: "Failed to fetch users.",
 			Data:    nil,
 			// Error:   err.Error(),
 		})
+		// Log the error for debugging purposes
+		logger.Logger.Error("Failed to fetch users", "error", err.Error())
 		return
 	}
 
@@ -67,6 +76,13 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 @param r *http.Request - The HTTP request object containing request details.
 */
 func GetUserByID(w http.ResponseWriter, r *http.Request) {
+	logger.Logger.Info(
+		"HTTP GetUserByID request",
+		"method", r.Method,
+		"path", r.URL.Path,
+		"ip", r.RemoteAddr,
+		"user_agent", r.UserAgent(),
+	)
 	vars := mux.Vars(r)
 	idStr := vars["id"]
 	id, err := strconv.Atoi(idStr)
@@ -80,6 +96,8 @@ func GetUserByID(w http.ResponseWriter, r *http.Request) {
 			Data:    nil,
 			// Error:   err.Error(),
 		})
+		// Log the error for debugging purposes
+		logger.Logger.Error("Invalid user ID", "error", err.Error())
 		return
 	}
 
@@ -94,6 +112,8 @@ func GetUserByID(w http.ResponseWriter, r *http.Request) {
 				Message: "User not found",
 				Data:    nil,
 			})
+			// Log the error for debugging purposes
+			logger.Logger.Error("User not found", "error", err.Error())
 		} else {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusInternalServerError)
@@ -144,6 +164,8 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 			Data:    nil,
 			// Error:   err.Error(),
 		})
+		// Log the error for debugging purposes
+		logger.Logger.Error("Invalid request payload", "error", err.Error())
 		return
 	}
 	// create user request log
@@ -167,6 +189,8 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 			Data:    nil,
 			Error:   err.Error(),
 		})
+		// Log the error for debugging purposes
+		logger.Logger.Error("Validation failed", "error", err.Error())
 		return
 	}
 
@@ -180,6 +204,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 			Message: "Birthdate must be in YYYY-MM-DD format",
 			Data:    nil,
 		})
+		logger.Logger.Error("Invalid birthdate format", "error", err.Error())
 		return
 	}
 
@@ -205,6 +230,8 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 				Data:    nil,
 				// Error:   err.Error(),
 			})
+			// Log the error for debugging purposes
+			logger.Logger.Error("A user with this email already exists", "error", err.Error())
 			return
 		}
 		w.WriteHeader(http.StatusInternalServerError)
@@ -240,6 +267,16 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	idStr := vars["id"]
 	id, err := strconv.Atoi(idStr)
+
+	logger.Logger.Info(
+		"HTTP UpdateUser request",
+		"method", r.Method,
+		"path", r.URL.Path,
+		"ip", r.RemoteAddr,
+		"user_agent", r.UserAgent(),
+		"user_id", id,
+	)
+
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
@@ -250,6 +287,8 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 			Data:    nil,
 			// Error:   err.Error(),
 		})
+		// Log the error for debugging purposes
+		logger.Logger.Error("Invalid request payload", "error", err.Error())
 		return
 	}
 
@@ -262,6 +301,8 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 			Message: "Error checking user",
 			Data:    nil,
 		})
+		// Log the error for debugging purposes
+		logger.Logger.Error("Failed to fetch users", "error", err.Error())
 		return
 	}
 	if !exists {
@@ -287,6 +328,20 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 			Data:    nil,
 			// Error:   err.Error(),
 		})
+		logger.Logger.Error("Invalid request payload", "error", err.Error())
+		return
+	}
+
+	if err := validate.Struct(req); err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(responses.APIResponse{
+			Status:  false,
+			Message: "Validation failed",
+			Data:    nil,
+			Error:   err.Error(),
+		})
+		logger.Logger.Error("Validation failed", "error", err.Error())
 		return
 	}
 
@@ -302,16 +357,8 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 			Message: "Birthdate must be in YYYY-MM-DD format",
 			Data:    nil,
 		})
-		return
-	}
-	if birthDate.After(time.Now().UTC().Truncate(24 * time.Hour)) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(responses.APIResponse{
-			Status:  false,
-			Message: "Birthdate cannot be in the future",
-			Data:    nil,
-		})
+		// Log the error for debugging purposes
+		logger.Logger.Error("Invalid birthdate format", "error", err.Error())
 		return
 	}
 
@@ -335,6 +382,8 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 			Data:    nil,
 			// Error:   err.Error(),
 		})
+		// Log the error for debugging purposes
+		logger.Logger.Error("Error updating user", "error", err.Error())
 		return
 	}
 
@@ -356,6 +405,16 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	idStr := vars["id"]
 	id, err := strconv.Atoi(idStr)
+
+	logger.Logger.Info(
+		"HTTP DeleteUser request",
+		"method", r.Method,
+		"path", r.URL.Path,
+		"ip", r.RemoteAddr,
+		"user_agent", r.UserAgent(),
+		"user_id", id,
+	)
+
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
@@ -366,6 +425,8 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 			Data:    nil,
 			// Error:   err.Error(),
 		})
+		// Log the error for debugging purposes
+		logger.Logger.Error("Invalid user ID", "error", err.Error())
 		return
 	}
 
@@ -380,6 +441,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 			Data:    nil,
 			// Error:   err.Error(),
 		})
+		logger.Logger.Error("Error deleting user", "error", err.Error())
 		return
 	}
 	if !deleted {

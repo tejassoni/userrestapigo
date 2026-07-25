@@ -189,10 +189,10 @@ func UserEmailExists(email string) (bool, error) {
 }
 
 /*
-* UserEmailExists checks if a user with the given email already exists in the database.
-* It takes a string email as input and returns a boolean indicating existence and an error if the operation fails.
-@param email string - The email address to check for existence in the database.
-@return bool - Returns true if the email exists, false otherwise.
+* UserIDExists checks if a user with the given ID already exists in the database.
+* It takes an integer ID as input and returns a boolean indicating existence and an error if the operation fails.
+@param id int - The ID of the user to check for existence in the database.
+@return bool - Returns true if the user exists, false otherwise.
 @return error - Returns an error if the database operation fails, otherwise returns nil.
 */
 func UserIDExists(id int) (bool, error) {
@@ -201,26 +201,6 @@ func UserIDExists(id int) (bool, error) {
 	query := `SELECT COUNT(*) FROM users WHERE id = ?`
 
 	err := config.DB.QueryRow(query, id).Scan(&count)
-	if err != nil {
-		return false, err
-	}
-
-	return count > 0, nil
-}
-
-/*
-* BirthdateInPast checks if the given birthdate is in the past.
-* It takes a string birthdate as input and returns a boolean indicating if the birthdate is in the past and an error if the operation fails.
-@param birthdate string - The birthdate to check, formatted as "YYYY-MM-DD".
-@return bool - Returns true if the birthdate is in the past, false otherwise.
-@return error - Returns an error if the database operation fails, otherwise returns nil.
-*/
-func BirthdateInPast(birthdate string) (bool, error) {
-	var count int
-
-	query := `SELECT COUNT(*) FROM users WHERE birthdate < ?`
-
-	err := config.DB.QueryRow(query, birthdate).Scan(&count)
 	if err != nil {
 		return false, err
 	}

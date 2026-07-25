@@ -1,6 +1,7 @@
 package validator
 
 import (
+	"time"
 	"userrestapigo/internal/repository"
 
 	"github.com/go-playground/validator/v10"
@@ -48,12 +49,11 @@ func UserIDExists(fl validator.FieldLevel) bool {
 }
 
 func BirthdateInPast(fl validator.FieldLevel) bool {
-	birthdate := fl.Field().String()
-
-	exists, err := repository.BirthdateInPast(birthdate)
+	birthdate, err := time.Parse("2006-01-02", fl.Field().String())
 	if err != nil {
 		return false
 	}
 
-	return exists
+	today := time.Now().UTC().Truncate(24 * time.Hour)
+	return birthdate.Before(today)
 }
