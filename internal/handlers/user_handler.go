@@ -35,7 +35,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 			Status:  false,
 			Message: "Failed to fetch users.",
 			Data:    nil,
-			Error:   err.Error(),
+			// Error:   err.Error(),
 		})
 		return
 	}
@@ -78,7 +78,7 @@ func GetUserByID(w http.ResponseWriter, r *http.Request) {
 			Status:  false,
 			Message: "Invalid user ID",
 			Data:    nil,
-			Error:   err.Error(),
+			// Error:   err.Error(),
 		})
 		return
 	}
@@ -142,7 +142,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 			Status:  false,
 			Message: "Invalid request payload",
 			Data:    nil,
-			Error:   err.Error(),
+			// Error:   err.Error(),
 		})
 		return
 	}
@@ -165,7 +165,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 			Status:  false,
 			Message: "Validation failed",
 			Data:    nil,
-			Error:   err.Error(),
+			// Error:   err.Error(),
 		})
 		return
 	}
@@ -192,7 +192,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 			Status:  false,
 			Message: "Birthdate must be in YYYY-MM-DD format",
 			Data:    nil,
-			Error:   err.Error(),
+			// Error:   err.Error(),
 		})
 		return
 	}
@@ -217,7 +217,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 				Status:  false,
 				Message: "A user with this email already exists",
 				Data:    nil,
-				Error:   err.Error(),
+				// Error:   err.Error(),
 			})
 			return
 		}
@@ -227,7 +227,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 			Status:  false,
 			Message: "Error creating user",
 			Data:    nil,
-			Error:   err.Error(),
+			// Error:   err.Error(),
 		})
 		return
 	}
@@ -288,15 +288,48 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	idStr := vars["id"]
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		http.Error(w, "Invalid user ID", http.StatusBadRequest)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+
+		json.NewEncoder(w).Encode(responses.APIResponse{
+			Status:  false,
+			Message: "Invalid user ID",
+			Data:    nil,
+			// Error:   err.Error(),
+		})
 		return
 	}
 
-	err = repository.DeleteUser(id)
+	deleted, err := repository.DeleteUser(id)
 	if err != nil {
-		http.Error(w, "Error deleting user: "+err.Error(), http.StatusInternalServerError)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+
+		json.NewEncoder(w).Encode(responses.APIResponse{
+			Status:  false,
+			Message: "Error deleting user",
+			Data:    nil,
+			// Error:   err.Error(),
+		})
+		return
+	}
+	if !deleted {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusNotFound)
+
+		json.NewEncoder(w).Encode(responses.APIResponse{
+			Status:  false,
+			Message: "User id not found",
+			Data:    nil,
+		})
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(responses.APIResponse{
+		Status:  true,
+		Message: "User deleted successfully.",
+		Data:    nil,
+	})
 }

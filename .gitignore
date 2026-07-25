@@ -1,32 +1,228 @@
-# If you prefer the allow list template instead of the deny list, see community template:
-# https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
-#
-# Binaries for programs and plugins
+# =============================================================================
+# GOLANG PROJECT - HEALTHCARE API
+# =============================================================================
+
+# =============================================================================
+# BINARIES & EXECUTABLES
+# =============================================================================
 *.exe
 *.exe~
 *.dll
 *.so
 *.dylib
+bin/
+dist/
+build/
+.bin/
 
-# Test binary, built with `go test -c`
+# =============================================================================
+# GO BUILD & TESTING
+# =============================================================================
 *.test
-
-# Code coverage profiles and other test artifacts
 *.out
 coverage.*
 *.coverprofile
 profile.cov
+*.prof
+*.pprof
+cpu.prof
+mem.prof
+goroutine.prof
+trace.out
 
-# Dependency directories (remove the comment below to include it)
-# vendor/
-
-# Go workspace file
-go.work
-go.work.sum
-
-# env file
+# =============================================================================
+# ENVIRONMENT & SECRETS (CRITICAL FOR HEALTHCARE!)
+# =============================================================================
 .env
+.env.*
+!.env.example
+!.env.template
 
-# Editor/IDE
-# .idea/
-# .vscode/
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+.ssh/
+secrets/
+private_key
+public_key
+credentials.json
+token.json
+.aws/
+.gcloud/
+.azure/
+
+# =============================================================================
+# HEALTHCARE COMPLIANCE (HIPAA, GDPR, PHI/PII)
+# =============================================================================
+# Patient data - NEVER commit!
+patient_data/
+medical_records/
+test_data_real/
+production_data/
+exported_data/
+anonymized_data/
+*.phi
+*.pii
+
+# Audit & compliance
+audit-trail/
+hipaa-logs/
+compliance-logs/
+audit/
+
+# Encryption
+*.gpg
+*.pgp
+secret-key/
+encryption-keys/
+
+# =============================================================================
+# LOGS & TEMP FILES
+# =============================================================================
+*.log
+logs/
+log/
+*.pid
+*.out
+tmp/
+temp/
+*.tmp
+*.temp
+logs/*.gz
+logs/*.zip
+
+# =============================================================================
+# DATABASES & DATA (CRITICAL!)
+# =============================================================================
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.sql
+data/
+*.csv
+*.xlsx
+*.json  # Except what's in version control!
+backups/
+dumps/
+*.sql.backup
+*.bak.sql
+export/
+downloads/
+
+# =============================================================================
+# IDE & EDITORS
+# =============================================================================
+.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+
+.idea/
+*.iml
+*.iws
+*.ipr
+.DS_Store/
+
+*.sublime-workspace
+*.sublime-project
+
+*.swp
+*.swo
+*~
+.vim/
+.#*
+*#
+
+# =============================================================================
+# OS SPECIFIC
+# =============================================================================
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+.directory
+
+# =============================================================================
+# DOCKER & CONTAINERS
+# =============================================================================
+docker-compose.override.yml
+.docker/
+docker-volumes/
+docker_data/
+
+# =============================================================================
+# DEPENDENCIES & CACHE
+# =============================================================================
+node_modules/
+package-lock.json
+yarn.lock
+.npm/
+.yarn/
+vendor/
+
+# =============================================================================
+# BUILD ARTIFACTS & RELEASES
+# =============================================================================
+dist/
+build/
+releases/
+*.tar.gz
+*.zip
+
+# =============================================================================
+# CERTIFICATES & SSL
+# =============================================================================
+*.crt
+*.key
+*.pem
+*.p12
+ca.crt
+tls/
+
+# =============================================================================
+# BACKUPS
+# =============================================================================
+*.bak
+*.backup
+*~
+*.old
+backup/
+snapshots/
+
+# =============================================================================
+# CI/CD & DEPLOYMENT
+# =============================================================================
+.github/workflows/secrets/
+.gitlab-ci/secrets/
+.circleci/secrets/
+*.tfstate
+*.tfstate.*
+terraform/.terraform/
+kubernetes/secrets/
+helm/secrets/
+*.secrets.yaml
+*.secret.yaml
+
+# =============================================================================
+# TESTING & COVERAGE
+# =============================================================================
+coverage/
+.coverage
+htmlcov/
+testdata/
+
+# =============================================================================
+# LANGUAGE SPECIFIC
+# =============================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+env/
+venv/

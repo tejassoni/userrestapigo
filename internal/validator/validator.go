@@ -13,6 +13,7 @@ import (
 func New() {
 	validate := validator.New()
 	validate.RegisterValidation("unique_email", UniqueEmail)
+	validate.RegisterValidation("user_id_exists", UserIDExists)
 }
 
 /*
@@ -24,10 +25,21 @@ func New() {
 func UniqueEmail(fl validator.FieldLevel) bool {
 	email := fl.Field().String()
 
-	exists, err := repository.EmailExists(email)
+	exists, err := repository.UserEmailExists(email)
 	if err != nil {
 		return false
 	}
 
 	return !exists
+}
+
+func UserIDExists(fl validator.FieldLevel) bool {
+	id := fl.Field().Int()
+
+	exists, err := repository.UserIDExists(int(id))
+	if err != nil {
+		return false
+	}
+
+	return exists
 }

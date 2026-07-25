@@ -128,30 +128,60 @@ func UpdateUser(user models.User) error {
 * DeleteUser removes a user from the database by their ID.
 * It takes an integer ID as input and returns an error if the operation fails.
 @param id int - The ID of the user to be deleted from the database.
+@return bool - Returns true when a user was deleted, false when the ID does not exist.
 @return error - Returns an error if the database operation fails, otherwise returns nil.
 */
-func DeleteUser(id int) error {
+func DeleteUser(id int) (bool, error) {
 	query := `
 		DELETE FROM users
 		WHERE id = ?
 	`
-	_, err := config.DB.Exec(query, id)
-	return err
+	result, err := config.DB.Exec(query, id)
+	if err != nil {
+		return false, err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return false, err
+	}
+
+	return rowsAffected > 0, nil
 }
 
 /*
-* EmailExists checks if a user with the given email already exists in the database.
+* UserEmailExists checks if a user with the given email already exists in the database.
 * It takes a string email as input and returns a boolean indicating existence and an error if the operation fails.
 @param email string - The email address to check for existence in the database.
 @return bool - Returns true if the email exists, false otherwise.
 @return error - Returns an error if the database operation fails, otherwise returns nil.
 */
-func EmailExists(email string) (bool, error) {
+func UserEmailExists(email string) (bool, error) {
 	var count int
 
 	query := `SELECT COUNT(*) FROM users WHERE email = ?`
 
 	err := config.DB.QueryRow(query, email).Scan(&count)
+	if err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
+}
+
+/*
+* UserEmailExists checks if a user with the given email already exists in the database.
+* It takes a string email as input and returns a boolean indicating existence and an error if the operation fails.
+@param email string - The email address to check for existence in the database.
+@return bool - Returns true if the email exists, false otherwise.
+@return error - Returns an error if the database operation fails, otherwise returns nil.
+*/
+func UserIDExists(id int) (bool, error) {
+	var count int
+
+	query := `SELECT COUNT(*) FROM users WHERE id = ?`
+
+	err := config.DB.QueryRow(query, id).Scan(&count)
 	if err != nil {
 		return false, err
 	}
