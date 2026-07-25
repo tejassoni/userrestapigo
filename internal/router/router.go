@@ -14,8 +14,8 @@ func registerHealthRoutes(router *mux.Router) {
 			"status":      true,
 			"message":     "User REST API is running",
 			"data":        nil,
-			"app_name":    config.APPNAME,
-			"app_version": config.APPVERSION,
+			"app_name":    config.APP_NAME,
+			"app_version": config.APP_VERSION,
 		}
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(response)

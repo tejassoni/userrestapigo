@@ -431,6 +431,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	deleted, err := repository.DeleteUser(id)
+
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
@@ -444,6 +445,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 		logger.Logger.Error("Error deleting user", "error", err.Error())
 		return
 	}
+
 	if !deleted {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusNotFound)
@@ -453,6 +455,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 			Message: "User id not found",
 			Data:    nil,
 		})
+		logger.Logger.Info("User id not found", "user_id", id)
 		return
 	}
 
