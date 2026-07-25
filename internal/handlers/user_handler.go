@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+	"userrestapigo/internal/errors"
 	"userrestapigo/internal/logger"
 	"userrestapigo/internal/models"
 	"userrestapigo/internal/repository"
@@ -206,9 +207,20 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		Password:  req.Password, // Hash before saving
 	}
 
+	// call repository to create user
 	id, err := repository.CreateUser(user)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
+		if errors.IsDuplicateEmailError(err) {
+			w.WriteHeader(http.StatusConflict)
+			json.NewEncoder(w).Encode(responses.APIResponse{
+				Status:  false,
+				Message: "A user with this email already exists",
+				Data:    nil,
+				Error:   err.Error(),
+			})
+			return
+		}
 		w.WriteHeader(http.StatusInternalServerError)
 
 		json.NewEncoder(w).Encode(responses.APIResponse{

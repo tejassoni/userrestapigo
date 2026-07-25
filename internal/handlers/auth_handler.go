@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"userrestapigo/internal/errors"
 	"userrestapigo/internal/logger"
 	"userrestapigo/internal/models"
 	"userrestapigo/internal/repository"
@@ -69,6 +70,15 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	id, err := repository.CreateUser(user)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
+		if errors.IsDuplicateEmailError(err) {
+			w.WriteHeader(http.StatusConflict)
+			json.NewEncoder(w).Encode(responses.APIResponse{
+				Status:  false,
+				Message: "A user with this email already exists",
+				Data:    nil,
+			})
+			return
+		}
 		w.WriteHeader(http.StatusInternalServerError)
 
 		json.NewEncoder(w).Encode(responses.APIResponse{
