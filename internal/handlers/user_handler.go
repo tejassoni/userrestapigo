@@ -6,11 +6,11 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+	"userrestapigo/internal/logger"
 	"userrestapigo/internal/models"
 	"userrestapigo/internal/repository"
 	"userrestapigo/internal/requests"
 	"userrestapigo/internal/responses"
-	"userrestapigo/internal/utils"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
@@ -124,7 +124,7 @@ func GetUserByID(w http.ResponseWriter, r *http.Request) {
 */
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 	// Log the incoming request details
-	utils.Logger.Info(
+	logger.Logger.Info(
 		"HTTP CreateUser request",
 		"method", r.Method,
 		"path", r.URL.Path,
@@ -146,7 +146,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// create user request log
-	utils.Logger.Info(
+	logger.Logger.Info(
 		"Create user request",
 		"email", req.Email,
 		"name", req.Name,
@@ -185,7 +185,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	// parse birthdate string to time.Time
 	birthDate, err := time.Parse("2006-01-02", req.Birthdate)
 	if err != nil {
-		utils.Logger.Error("Invalid birthdate format", "error", err)
+		logger.Logger.Error("Invalid birthdate format", "error", err)
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(responses.APIResponse{
 			Status:  false,

@@ -6,9 +6,6 @@ import (
 	"io"
 	"net/http"
 	"regexp"
-	"time"
-	"userrestapigo/models"
-	"userrestapigo/utils"
 )
 
 var birthdateValuePattern = regexp.MustCompile(`"birthdate"\s*:\s*(\d{4}-\d{2}-\d{2})`)

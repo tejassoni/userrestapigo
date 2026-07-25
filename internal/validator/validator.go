@@ -1,10 +1,19 @@
-package validation
+package validator
 
 import (
 	"userrestapigo/internal/repository"
 
 	"github.com/go-playground/validator/v10"
 )
+
+/*
+* New initializes the validator and registers custom validation functions.
+* It sets up the validator to be used for validating request payloads and other data structures.
+ */
+func New() {
+	validate := validator.New()
+	validate.RegisterValidation("unique_email", UniqueEmail)
+}
 
 /*
 * UniqueEmail is a custom validation function that checks if the provided email is unique in the database.

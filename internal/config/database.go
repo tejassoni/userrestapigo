@@ -14,7 +14,7 @@ import (
 var DB *sql.DB
 
 /* LoadEnv loads environment variables from a .env file */
-func LoadEnv() {
+func Load() {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -25,7 +25,7 @@ func LoadEnv() {
 func ConnectDB() {
 
 	// Load environment variables
-	LoadEnv()
+	Load()
 	dbUser := os.Getenv("DB_USER")
 	dbPassword := os.Getenv("DB_PASSWORD")
 	dbHost := os.Getenv("DB_HOST")

@@ -1,4 +1,4 @@
-package utils
+package logger
 
 import (
 	"io"
@@ -9,7 +9,7 @@ import (
 
 var Logger *slog.Logger
 
-func InitLogger() {
+func New() {
 	// Create logs directory if it doesn't exist
 	if err := os.MkdirAll("logs", 0755); err != nil {
 		log.Fatal(err)

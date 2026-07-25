@@ -4,29 +4,25 @@ import (
 	"log"
 	"net/http"
 	"userrestapigo/internal/config"
-	"userrestapigo/internal/handlers"
-	"userrestapigo/internal/utils"
-
-	"github.com/gorilla/mux"
+	"userrestapigo/internal/logger"
+	"userrestapigo/internal/router"
+	"userrestapigo/internal/validator"
 )
 
 func main() {
 
 	// logs
-	utils.InitLogger()
-	utils.Logger.Info("Application started")
-
+	logger.New()
 	// Initialize the validator
-	config.InitValidator()
+	validator.New()
 
-	config.LoadEnv()                // Load environment variables from .env file
-	config.ConnectDB()              // Establish a connection to the database
-	router := mux.NewRouter()       // Create a new router using Gorilla Mux
-	handlers.RegisterRoutes(router) // Register the routes for the application
+	config.Load()              // Load environment variables from .env file
+	config.ConnectDB()         // Establish a connection to the database
+	httpRouter := router.New() // Register application routes
 
 	log.Println("Server started on http://localhost:8080") // Log the server start message
 
-	if err := http.ListenAndServe(":8080", router); err != nil {
+	if err := http.ListenAndServe(":8080", httpRouter); err != nil {
 		log.Fatal(err)
 	}
 }

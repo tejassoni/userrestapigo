@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"userrestapigo/database"
-	"userrestapigo/models"
+	"userrestapigo/internal/config"
+	"userrestapigo/internal/models"
 )
 
 /*
@@ -19,7 +19,7 @@ func CreateUser(user models.User) (int, error) {
 		VALUES (?, ?, ?, ?, ?, ?)
 	`
 	// execute the SQL query with the provided user data
-	result, err := database.DB.Exec(
+	result, err := config.DB.Exec(
 		query,
 		user.Name,
 		user.Email,
@@ -53,7 +53,7 @@ func GetUsers() ([]models.User, error) {
 		SELECT id, name, email, is_active, birthdate, gender, created_at, updated_at
 		FROM users
 	`
-	rows, err := database.DB.Query(query)
+	rows, err := config.DB.Query(query)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +91,7 @@ func GetUserByID(id int) (models.User, error) {
 		FROM users
 		WHERE id = ?
 	`
-	err := database.DB.QueryRow(query, id).Scan(&user.ID, &user.Name, &user.Email, &user.IsActive, &user.Birthdate, &user.Gender, &user.CreatedAt, &user.UpdatedAt)
+	err := config.DB.QueryRow(query, id).Scan(&user.ID, &user.Name, &user.Email, &user.IsActive, &user.Birthdate, &user.Gender, &user.CreatedAt, &user.UpdatedAt)
 	if err != nil {
 		return user, err
 	}
@@ -110,7 +110,7 @@ func UpdateUser(user models.User) error {
 		SET name = ?, email = ?, is_active = ?, birthdate = ?, gender = ?, password = ?, updated_at = NOW()
 		WHERE id = ?
 	`
-	_, err := database.DB.Exec(
+	_, err := config.DB.Exec(
 		query,
 		user.Name,
 		user.Email,
@@ -135,7 +135,7 @@ func DeleteUser(id int) error {
 		DELETE FROM users
 		WHERE id = ?
 	`
-	_, err := database.DB.Exec(query, id)
+	_, err := config.DB.Exec(query, id)
 	return err
 }
 
@@ -151,7 +151,7 @@ func EmailExists(email string) (bool, error) {
 
 	query := `SELECT COUNT(*) FROM users WHERE email = ?`
 
-	err := database.DB.QueryRow(query, email).Scan(&count)
+	err := config.DB.QueryRow(query, email).Scan(&count)
 	if err != nil {
 		return false, err
 	}

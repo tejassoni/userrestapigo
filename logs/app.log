@@ -1,0 +1,2 @@
+time=2026-07-25T11:47:29.582+05:30 level=INFO msg="Successfully connected to the database"
+time=2026-07-25T11:47:29.582+05:30 level=INFO msg="Server started on http://localhost:8080"
