@@ -255,26 +255,77 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	idStr := vars["id"]
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		http.Error(w, "Invalid user ID", http.StatusBadRequest)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+
+		json.NewEncoder(w).Encode(responses.APIResponse{
+			Status:  false,
+			Message: "Invalid request payload",
+			Data:    nil,
+			// Error:   err.Error(),
+		})
 		return
 	}
 
-	var user models.User
-	err = json.NewDecoder(r.Body).Decode(&user)
+	// Decode JSON request body into the UpdateUserRequest struct
+	req, err := requests.DecodeUpdateUserRequest(r)
 	if err != nil {
-		http.Error(w, "Invalid request payload: "+err.Error(), http.StatusBadRequest)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+
+		json.NewEncoder(w).Encode(responses.APIResponse{
+			Status:  false,
+			Message: "Invalid request payload",
+			Data:    nil,
+			// Error:   err.Error(),
+		})
 		return
 	}
 
-	user.ID = id
+	req.ID = id
+	birthDate, err := time.Parse("2006-01-02", req.Birthdate)
+	if err != nil {
+		logger.Logger.Error("Invalid birthdate format", "error", err)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+
+		json.NewEncoder(w).Encode(responses.APIResponse{
+			Status:  false,
+			Message: "Birthdate must be in YYYY-MM-DD format",
+			Data:    nil,
+		})
+		return
+	}
+
+	user := models.User{
+		ID:        req.ID,
+		Name:      req.Name,
+		Email:     req.Email,
+		Gender:    req.Gender,
+		Birthdate: birthDate,
+		IsActive:  req.IsActive,
+	}
+
 	err = repository.UpdateUser(user)
 	if err != nil {
-		http.Error(w, "Error updating user: "+err.Error(), http.StatusInternalServerError)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+
+		json.NewEncoder(w).Encode(responses.APIResponse{
+			Status:  false,
+			Message: "Error updating user",
+			Data:    nil,
+			// Error:   err.Error(),
+		})
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(user)
+	json.NewEncoder(w).Encode(responses.APIResponse{
+		Status:  true,
+		Message: "User updated successfully.",
+		Data:    user,
+	})
 }
 
 /*

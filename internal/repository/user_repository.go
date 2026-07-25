@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"errors"
 	"userrestapigo/internal/config"
 	"userrestapigo/internal/models"
 )
@@ -105,23 +106,40 @@ func GetUserByID(id int) (models.User, error) {
 @return error - Returns an error if the database operation fails, otherwise returns nil.
 */
 func UpdateUser(user models.User) error {
+	// Validate input
+	if user.ID <= 0 || user.Email == "" {
+		return errors.New("invalid user data")
+	}
+
 	query := `
 		UPDATE users
 		SET name = ?, email = ?, is_active = ?, birthdate = ?, gender = ?, password = ?, updated_at = NOW()
 		WHERE id = ?
 	`
-	_, err := config.DB.Exec(
+	result, err := config.DB.Exec(
 		query,
 		user.Name,
 		user.Email,
 		user.IsActive,
 		user.Birthdate,
 		user.Gender,
-		user.Password,
+		user.Password, // should be hashed
 		user.ID,
 	)
+	if err != nil {
+		return err
+	}
 
-	return err
+	// Verify row was actually updated
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return errors.New("user not found")
+	}
+
+	return nil
 }
 
 /*

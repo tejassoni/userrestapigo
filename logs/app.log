@@ -1,36 +1,8 @@
-time=2026-07-25T11:55:13.707+05:30 level=INFO source=/var/www/html/userrestapigo/internal/handlers/user_handler.go:127 msg="HTTP CreateUser request" method=POST path=/api/v1/users ip=[::1]:55166 user_agent=PostmanRuntime/7.49.1
-time=2026-07-25T11:55:13.707+05:30 level=INFO source=/var/www/html/userrestapigo/internal/handlers/user_handler.go:149 msg="Create user request" email=tejas@yopmail.com name=Tejas gender=male birthdate=2000-01-10 is_active=true
-time=2026-07-25T11:55:50.781+05:30 level=INFO msg="Successfully connected to the database"
-time=2026-07-25T11:55:50.781+05:30 level=INFO msg="Server started on http://localhost:8080"
-time=2026-07-25T11:55:56.579+05:30 level=INFO source=/var/www/html/userrestapigo/internal/handlers/user_handler.go:129 msg="HTTP CreateUser request" method=POST path=/api/v1/users ip=[::1]:46214 user_agent=PostmanRuntime/7.49.1
-time=2026-07-25T11:55:56.579+05:30 level=INFO source=/var/www/html/userrestapigo/internal/handlers/user_handler.go:151 msg="Create user request" email=tejas@yopmail.com name=Tejas gender=male birthdate=2000-01-10 is_active=true
-time=2026-07-25T11:58:15.247+05:30 level=INFO msg="Successfully connected to the database"
-time=2026-07-25T11:58:15.247+05:30 level=INFO msg="Server started on http://localhost:8080"
-time=2026-07-25T11:58:18.540+05:30 level=INFO source=/var/www/html/userrestapigo/internal/handlers/user_handler.go:127 msg="HTTP CreateUser request" method=POST path=/api/v1/users ip=[::1]:60606 user_agent=PostmanRuntime/7.49.1
-time=2026-07-25T11:58:18.541+05:30 level=INFO source=/var/www/html/userrestapigo/internal/handlers/user_handler.go:149 msg="Create user request" email=tejas@yopmail.com name=Tejas gender=male birthdate=2000-01-10 is_active=true
-time=2026-07-25T12:01:05.145+05:30 level=INFO msg="Successfully connected to the database"
-time=2026-07-25T12:01:05.145+05:30 level=INFO msg="Server started on http://localhost:8080"
-time=2026-07-25T12:01:09.584+05:30 level=INFO source=/var/www/html/userrestapigo/internal/handlers/user_handler.go:127 msg="HTTP CreateUser request" method=POST path=/api/v1/users ip=[::1]:56378 user_agent=PostmanRuntime/7.49.1
-time=2026-07-25T12:01:09.584+05:30 level=INFO source=/var/www/html/userrestapigo/internal/handlers/user_handler.go:149 msg="Create user request" email=tejas@yopmail.com name=Tejas gender=male birthdate=2000-01-10 is_active=true
-time=2026-07-25T12:10:33.010+05:30 level=INFO msg="Successfully connected to the database"
-time=2026-07-25T12:10:33.011+05:30 level=INFO msg="Server started on http://localhost:8080"
-time=2026-07-25T12:10:37.303+05:30 level=INFO source=/var/www/html/userrestapigo/internal/handlers/user_handler.go:128 msg="HTTP CreateUser request" method=POST path=/api/v1/users ip=[::1]:38674 user_agent=PostmanRuntime/7.49.1
-time=2026-07-25T12:10:37.303+05:30 level=INFO source=/var/www/html/userrestapigo/internal/handlers/user_handler.go:150 msg="Create user request" email=tejas@yopmail.com name=Tejas gender=male birthdate=2000-01-10 is_active=true
-time=2026-07-25T12:14:18.879+05:30 level=INFO source=/var/www/html/userrestapigo/internal/handlers/user_handler.go:128 msg="HTTP CreateUser request" method=POST path=/api/v1/users ip=[::1]:41104 user_agent=PostmanRuntime/7.49.1
-time=2026-07-25T12:14:18.879+05:30 level=INFO source=/var/www/html/userrestapigo/internal/handlers/user_handler.go:150 msg="Create user request" email=tejas@yopmail.com name=Tejas gender=male birthdate=2000-01-10 is_active=true
-time=2026-07-25T12:30:26.215+05:30 level=INFO msg="Successfully connected to the database"
-time=2026-07-25T12:30:26.215+05:30 level=INFO msg="Server started on http://localhost:8080"
-time=2026-07-25T12:35:35.461+05:30 level=INFO msg="Successfully connected to the database"
-time=2026-07-25T12:35:35.462+05:30 level=INFO msg="Server started on http://localhost:8080"
-time=2026-07-25T13:03:25.866+05:30 level=INFO source=/var/www/html/userrestapigo/internal/handlers/user_handler.go:128 msg="HTTP CreateUser request" method=POST path=/api/v1/users ip=[::1]:48328 user_agent=PostmanRuntime/7.49.1
-time=2026-07-25T13:03:25.866+05:30 level=INFO source=/var/www/html/userrestapigo/internal/handlers/user_handler.go:150 msg="Create user request" email=tejas@yopmail.com name=Tejas gender=male birthdate=2000-01-10 is_active=true
-time=2026-07-25T13:03:41.813+05:30 level=INFO msg="Successfully connected to the database"
-time=2026-07-25T13:03:41.813+05:30 level=INFO msg="Server started on http://localhost:8080"
-time=2026-07-25T13:03:48.081+05:30 level=INFO source=/var/www/html/userrestapigo/internal/handlers/user_handler.go:128 msg="HTTP CreateUser request" method=POST path=/api/v1/users ip=[::1]:51456 user_agent=PostmanRuntime/7.49.1
-time=2026-07-25T13:03:48.081+05:30 level=INFO source=/var/www/html/userrestapigo/internal/handlers/user_handler.go:150 msg="Create user request" email=tejas@yopmail.com name=Tejas gender=male birthdate=2000-01-10 is_active=true
-time=2026-07-25T13:06:17.152+05:30 level=INFO msg="Successfully connected to the database"
-time=2026-07-25T13:06:17.152+05:30 level=INFO msg="Server started on http://localhost:8080"
-time=2026-07-25T13:13:31.387+05:30 level=INFO msg="Successfully connected to the database"
-time=2026-07-25T13:13:31.387+05:30 level=INFO msg="Server started on http://localhost:8080"
-time=2026-07-25T13:13:59.447+05:30 level=INFO msg="Successfully connected to the database"
-time=2026-07-25T13:13:59.447+05:30 level=INFO msg="Server started on http://localhost:8080"
+time=2026-07-25T14:37:36.297+05:30 level=INFO msg="Successfully connected to the database"
+time=2026-07-25T14:37:36.298+05:30 level=INFO msg="Server started on http://localhost:8080"
+time=2026-07-25T14:37:58.056+05:30 level=INFO msg="Successfully connected to the database"
+time=2026-07-25T14:37:58.056+05:30 level=INFO msg="Server started on http://localhost:8080"
+time=2026-07-25T15:18:41.659+05:30 level=INFO msg="Successfully connected to the database"
+time=2026-07-25T15:18:41.661+05:30 level=INFO msg="Server started on http://localhost:8080"
+time=2026-07-25T15:21:24.204+05:30 level=INFO source=/var/www/html/userrestapigo/internal/handlers/user_handler.go:128 msg="HTTP CreateUser request" method=POST path=/api/v1/users ip=[::1]:36438 user_agent=PostmanRuntime/7.49.1
+time=2026-07-25T15:21:24.204+05:30 level=INFO source=/var/www/html/userrestapigo/internal/handlers/user_handler.go:150 msg="Create user request" email=tejas@yopmail.com name=Tejas gender=male birthdate=2000-01-10 is_active=true
