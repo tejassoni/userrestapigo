@@ -12,8 +12,10 @@ import (
  */
 func New() *validator.Validate {
 	validate := validator.New()
+	// Register custom validation functions
 	validate.RegisterValidation("unique_email", UniqueEmail)
 	validate.RegisterValidation("user_id_exists", UserIDExists)
+	validate.RegisterValidation("birthdate_in_past", BirthdateInPast)
 	return validate
 }
 
@@ -38,6 +40,17 @@ func UserIDExists(fl validator.FieldLevel) bool {
 	id := fl.Field().Int()
 
 	exists, err := repository.UserIDExists(int(id))
+	if err != nil {
+		return false
+	}
+
+	return exists
+}
+
+func BirthdateInPast(fl validator.FieldLevel) bool {
+	birthdate := fl.Field().String()
+
+	exists, err := repository.BirthdateInPast(birthdate)
 	if err != nil {
 		return false
 	}

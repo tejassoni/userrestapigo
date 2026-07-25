@@ -53,6 +53,7 @@ func GetUsers() ([]models.User, error) {
 	query := `
 		SELECT id, name, email, is_active, birthdate, gender, created_at, updated_at
 		FROM users
+		ORDER BY created_at DESC, id DESC
 	`
 	rows, err := config.DB.Query(query)
 	if err != nil {
@@ -200,6 +201,26 @@ func UserIDExists(id int) (bool, error) {
 	query := `SELECT COUNT(*) FROM users WHERE id = ?`
 
 	err := config.DB.QueryRow(query, id).Scan(&count)
+	if err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
+}
+
+/*
+* BirthdateInPast checks if the given birthdate is in the past.
+* It takes a string birthdate as input and returns a boolean indicating if the birthdate is in the past and an error if the operation fails.
+@param birthdate string - The birthdate to check, formatted as "YYYY-MM-DD".
+@return bool - Returns true if the birthdate is in the past, false otherwise.
+@return error - Returns an error if the database operation fails, otherwise returns nil.
+*/
+func BirthdateInPast(birthdate string) (bool, error) {
+	var count int
+
+	query := `SELECT COUNT(*) FROM users WHERE birthdate < ?`
+
+	err := config.DB.QueryRow(query, birthdate).Scan(&count)
 	if err != nil {
 		return false, err
 	}
