@@ -12,12 +12,12 @@ import (
 	"userrestapigo/internal/repository"
 	"userrestapigo/internal/requests"
 	"userrestapigo/internal/responses"
+	validation "userrestapigo/internal/validator"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 )
 
-var validate = validator.New()
+var validate = validation.New()
 
 /*
 * GetUsers handles the HTTP GET request to retrieve all users.
@@ -165,34 +165,20 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 			Status:  false,
 			Message: "Validation failed",
 			Data:    nil,
-			// Error:   err.Error(),
+			Error:   err.Error(),
 		})
 		return
 	}
 
-	// Business validation
-	if req.Password != req.ConfirmPassword {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-
-		json.NewEncoder(w).Encode(responses.APIResponse{
-			Status:  false,
-			Message: "Password and Confirm Password do not match",
-			Data:    nil,
-		})
-		return
-	}
-
-	// parse birthdate string to time.Time
+	// Parse and validate the birthdate before saving it.
 	birthDate, err := time.Parse("2006-01-02", req.Birthdate)
 	if err != nil {
-		logger.Logger.Error("Invalid birthdate format", "error", err)
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(responses.APIResponse{
 			Status:  false,
 			Message: "Birthdate must be in YYYY-MM-DD format",
 			Data:    nil,
-			// Error:   err.Error(),
 		})
 		return
 	}
@@ -267,6 +253,28 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	exists, err := repository.UserIDExists(id)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(responses.APIResponse{
+			Status:  false,
+			Message: "Error checking user",
+			Data:    nil,
+		})
+		return
+	}
+	if !exists {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(responses.APIResponse{
+			Status:  false,
+			Message: "User not found",
+			Data:    nil,
+		})
+		return
+	}
+
 	// Decode JSON request body into the UpdateUserRequest struct
 	req, err := requests.DecodeUpdateUserRequest(r)
 	if err != nil {
@@ -292,6 +300,16 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(responses.APIResponse{
 			Status:  false,
 			Message: "Birthdate must be in YYYY-MM-DD format",
+			Data:    nil,
+		})
+		return
+	}
+	if birthDate.After(time.Now().UTC().Truncate(24 * time.Hour)) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(responses.APIResponse{
+			Status:  false,
+			Message: "Birthdate cannot be in the future",
 			Data:    nil,
 		})
 		return

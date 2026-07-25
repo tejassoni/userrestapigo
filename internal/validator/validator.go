@@ -10,10 +10,11 @@ import (
 * New initializes the validator and registers custom validation functions.
 * It sets up the validator to be used for validating request payloads and other data structures.
  */
-func New() {
+func New() *validator.Validate {
 	validate := validator.New()
 	validate.RegisterValidation("unique_email", UniqueEmail)
 	validate.RegisterValidation("user_id_exists", UserIDExists)
+	return validate
 }
 
 /*
