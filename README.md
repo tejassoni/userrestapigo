@@ -15,15 +15,22 @@ A versioned REST API for managing users, built with Go, Gorilla Mux, and MySQL.
    cp .env.example .env
    ```
 
-2. Create the database and `users` table. The schema creates the `users_api` database, so run it with a MySQL account that can create databases:
+2. Create the database named by `DB_NAME` (for example, `users_api`):
 
    ```bash
-   mysql -u root -p < internal/database/schema.sql
+   mysql -u root -p -e 'CREATE DATABASE users_api CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
    ```
 
 3. Set `DB_NAME=users_api` (or the name of an existing compatible database), `DB_USER`, and `DB_PASSWORD` in `.env`.
 
-4. Start the API:
+4. Apply database migrations:
+
+   ```bash
+   make migrate
+   # or: go run ./cmd/migrate
+   ```
+
+5. Start the API:
 
    ```bash
    make run
@@ -31,6 +38,20 @@ A versioned REST API for managing users, built with Go, Gorilla Mux, and MySQL.
    ```
 
 The default server address is `http://localhost:8080`.
+
+## Packages and imports
+
+Dependencies and exact versions are declared in `go.mod`. Go downloads them automatically when you run or build the project; to download them ahead of time, run `go mod download`.
+
+| Package | Version | Imported in | Purpose |
+| --- | --- | --- | --- |
+| `github.com/go-sql-driver/mysql` | `v1.10.0` | `internal/config/database.go`, `internal/errors/errors.go` | MySQL database driver and MySQL error handling. The database package imports the driver for its registration side effect. |
+| `github.com/gorilla/mux` | `v1.8.1` | `internal/router/*.go`, `internal/handlers/user_handler.go` | HTTP router, path prefixes, method matching, and `{id}` path parameters. |
+| `github.com/joho/godotenv` | `v1.5.1` | `internal/config/config.go` | Loads local settings from `.env`. |
+| `github.com/go-playground/validator/v10` | `v10.30.3` | `internal/validator/validator.go` | Validates user and registration payloads, including custom validation rules. |
+| `golang.org/x/crypto/bcrypt` | `v0.52.0` | `internal/handlers/auth_handler.go`, `internal/handlers/user_handler.go` | Hashes passwords before user records are stored. |
+
+`go.mod` also records transitive modules marked `// indirect`. The validator and bcrypt packages above are imported by application code even though their current entries are marked indirect; the remaining indirect modules are dependencies of these packages. The project also uses Go standard-library packages such as `net/http`, `encoding/json`, `database/sql`, `log`, `time`, and `os` for HTTP handling, JSON responses, database access, logging, time parsing, and environment access.
 
 ## Server configuration
 
@@ -167,8 +188,11 @@ curl http://localhost:8080/api/v1/users/1
 | `make worker` | Start the background worker. |
 | `make db-schema` | Load the schema using `MYSQL_USER`, `MYSQL_PASSWORD`, and `MYSQL_DATABASE`. |
 
+## Database migrations
+
+Migrations live in `cmd/migrate/migrations` and are embedded in the migration binary. Each `.sql` file is applied once, in filename order, and recorded in the `schema_migrations` table. Add a new sequentially named SQL file (for example, `002_add_user_role.sql`) for every schema change; do not edit a migration that has already been applied.
+
 ## Notes
 
 - User passwords are hashed with bcrypt and are excluded from user response objects.
 - The service must connect to MySQL successfully before it begins listening for HTTP requests.
-- `POST /api/v1/auth/register` does not currently issue a token; login and refresh routes are not implemented.

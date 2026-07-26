@@ -101,6 +101,7 @@ logs/*.zip
 *.sqlite3
 *.db-journal
 *.sql
+!cmd/migrate/migrations/*.sql
 data/
 *.csv
 *.xlsx
