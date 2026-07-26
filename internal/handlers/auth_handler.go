@@ -9,6 +9,8 @@ import (
 	"userrestapigo/internal/repository"
 	"userrestapigo/internal/requests"
 	"userrestapigo/internal/responses"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 func Register(w http.ResponseWriter, r *http.Request) {
@@ -61,10 +63,23 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		logger.Logger.Error("Failed to hash password", "error", err.Error())
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(responses.APIResponse{
+			Status:  false,
+			Message: "Error creating user",
+			Data:    nil,
+		})
+		return
+	}
+
 	user := models.User{
 		Name:     req.Name,
 		Email:    req.Email,
-		Password: req.Password, // Hash before saving
+		Password: string(hashedPassword),
 	}
 
 	id, err := repository.CreateUser(user)

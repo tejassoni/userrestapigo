@@ -16,7 +16,6 @@ func main() {
 	// Initialize the validator
 	validator.New()
 
-	config.Load()              // Load environment variables from .env file
 	config.ConnectDB()         // Establish a connection to the database
 	httpRouter := router.New() // Register application routes
 

@@ -4,33 +4,21 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"os"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/joho/godotenv"
 )
 
 var DB *sql.DB
 
-/* LoadEnv loads environment variables from a .env file */
-func Load() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-}
-
 /* ConnectDB establishes a connection to the database using environment variables */
 func ConnectDB() {
 
-	// Load environment variables
-	Load()
-	dbUser := os.Getenv("DB_USER")
-	dbPassword := os.Getenv("DB_PASSWORD")
-	dbHost := os.Getenv("DB_HOST")
-	dbPort := os.Getenv("DB_PORT")
-	dbName := os.Getenv("DB_NAME")
+	dbUser := DB_USER         // Get the database user from environment variables config.go
+	dbPassword := DB_PASSWORD // Get the database password from environment variables config.go
+	dbHost := DB_HOST         // Get the database host from environment variables config.go
+	dbPort := DB_PORT         // Get the database port from environment variables config.go
+	dbName := DB_NAME         // Get the database name from environment variables config.go
 
 	// Create the DSN (Data Source Name) for MySQL connection
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", dbUser, dbPassword, dbHost, dbPort, dbName)
@@ -48,7 +36,7 @@ func ConnectDB() {
 	DB.SetMaxOpenConns(10)                 // Set the maximum number of open connections (Connection : 10)
 	DB.SetMaxIdleConns(10)                 // Set the maximum number of idle connections (Connection : 10)
 
-	err = DB.Ping()
+	err = DB.Ping() // Ping the database to verify the connection
 	if err != nil {
 		log.Fatal("Error pinging database: ", err)
 	}

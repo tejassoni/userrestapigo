@@ -15,6 +15,7 @@ import (
 	validation "userrestapigo/internal/validator"
 
 	"github.com/gorilla/mux"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var validate = validation.New()
@@ -35,20 +36,21 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 	)
 	users, err := repository.GetUsers()
 	if err != nil {
+		// set the content type and status code for the response
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
 		// Return a JSON response indicating the error
 		json.NewEncoder(w).Encode(responses.APIResponse{
 			Status:  false,
 			Message: "Failed to fetch users.",
-			Data:    nil,
+			Data:    []models.User{},
 			// Error:   err.Error(),
 		})
 		// Log the error for debugging purposes
-		logger.Logger.Error("Failed to fetch users", "error", err.Error())
+		logger.Logger.Warn("Failed to fetch users", "error", err.Error())
 		return
 	}
-
+	// set the content type and status code for the response
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
@@ -57,7 +59,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(responses.APIResponse{
 			Status:  true,
 			Message: "User Records no found...! Please create new user records.",
-			Data:    nil,
+			Data:    []models.User{},
 		})
 		return
 	} else {
@@ -87,49 +89,53 @@ func GetUserByID(w http.ResponseWriter, r *http.Request) {
 	idStr := vars["id"]
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
+		// set the content type and status code for the response
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 
 		json.NewEncoder(w).Encode(responses.APIResponse{
 			Status:  false,
 			Message: "Invalid user ID",
-			Data:    nil,
+			Data:    []models.User{},
 			// Error:   err.Error(),
 		})
 		// Log the error for debugging purposes
-		logger.Logger.Error("Invalid user ID", "error", err.Error())
+		logger.Logger.Warn("Invalid user ID", "error", err.Error())
 		return
 	}
 
 	user, err := repository.GetUserByID(id)
 	if err != nil {
 		if err == sql.ErrNoRows {
+			// set the content type and status code for the response
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusNotFound)
 
 			json.NewEncoder(w).Encode(responses.APIResponse{
 				Status:  false,
 				Message: "User not found",
-				Data:    nil,
+				Data:    []models.User{},
 			})
 			// Log the error for debugging purposes
-			logger.Logger.Error("User not found", "error", err.Error())
+			logger.Logger.Info("User not found", "error", err.Error())
 		} else {
+			// set the content type and status code for the response
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusInternalServerError)
 
 			json.NewEncoder(w).Encode(responses.APIResponse{
 				Status:  false,
 				Message: "Error fetching user",
-				Data:    nil,
+				Data:    []models.User{},
 			})
+			// Log the error for debugging purposes
+			logger.Logger.Error("User not found", "error", err.Error())
 		}
 		return
 	}
-
+	// set the content type and status code for the response
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-
 	json.NewEncoder(w).Encode(responses.APIResponse{
 		Status:  true,
 		Message: "User fetched successfully.",
@@ -155,17 +161,18 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	// Decode JSON request body into the CreateUserRequest struct
 	req, err := requests.DecodeCreateUserRequest(r)
 	if err != nil {
+		// set the content type and status code for the response
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 
 		json.NewEncoder(w).Encode(responses.APIResponse{
 			Status:  false,
 			Message: "Invalid request payload",
-			Data:    nil,
+			Data:    []models.User{},
 			// Error:   err.Error(),
 		})
 		// Log the error for debugging purposes
-		logger.Logger.Error("Invalid request payload", "error", err.Error())
+		logger.Logger.Warn("Invalid request payload", "error", err.Error())
 		return
 	}
 	// create user request log
@@ -180,31 +187,47 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	// Validate the request struct using the validator package
 	if err := validate.Struct(req); err != nil {
+		// set the content type and status code for the response
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 
 		json.NewEncoder(w).Encode(responses.APIResponse{
 			Status:  false,
 			Message: "Validation failed",
-			Data:    nil,
+			Data:    []models.User{},
 			Error:   err.Error(),
 		})
 		// Log the error for debugging purposes
-		logger.Logger.Error("Validation failed", "error", err.Error())
+		logger.Logger.Warn("Validation failed", "error", err.Error())
 		return
 	}
 
 	// Parse and validate the birthdate before saving it.
 	birthDate, err := time.Parse("2006-01-02", req.Birthdate)
 	if err != nil {
+		// set the content type and status code for the response
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(responses.APIResponse{
 			Status:  false,
 			Message: "Birthdate must be in YYYY-MM-DD format",
-			Data:    nil,
+			Data:    []models.User{},
 		})
-		logger.Logger.Error("Invalid birthdate format", "error", err.Error())
+		logger.Logger.Warn("Invalid birthdate format", "error", err.Error())
+		return
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		// set the content type and status code for the response
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(responses.APIResponse{
+			Status:  false,
+			Message: "Error creating user",
+			Data:    []models.User{},
+		})
+		logger.Logger.Warn("Failed to hash password", "error", err.Error())
 		return
 	}
 
@@ -215,23 +238,24 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		Gender:    req.Gender,
 		Birthdate: birthDate,
 		IsActive:  req.IsActive,
-		Password:  req.Password, // Hash before saving
+		Password:  string(hashedPassword),
 	}
 
 	// call repository to create user
 	id, err := repository.CreateUser(user)
 	if err != nil {
+		// set the content type and status code for the response
 		w.Header().Set("Content-Type", "application/json")
 		if errors.IsDuplicateEmailError(err) {
 			w.WriteHeader(http.StatusConflict)
 			json.NewEncoder(w).Encode(responses.APIResponse{
 				Status:  false,
 				Message: "A user with this email already exists",
-				Data:    nil,
+				Data:    []models.User{},
 				// Error:   err.Error(),
 			})
 			// Log the error for debugging purposes
-			logger.Logger.Error("A user with this email already exists", "error", err.Error())
+			logger.Logger.Warn("A user with this email already exists", "error", err.Error())
 			return
 		}
 		w.WriteHeader(http.StatusInternalServerError)
@@ -239,12 +263,12 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(responses.APIResponse{
 			Status:  false,
 			Message: "Error creating user",
-			Data:    nil,
+			Data:    []models.User{},
 			// Error:   err.Error(),
 		})
 		return
 	}
-
+	// set the content type and status code for the response
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 
@@ -278,40 +302,43 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	)
 
 	if err != nil {
+		// set the content type and status code for the response
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 
 		json.NewEncoder(w).Encode(responses.APIResponse{
 			Status:  false,
 			Message: "Invalid request payload",
-			Data:    nil,
+			Data:    []models.User{},
 			// Error:   err.Error(),
 		})
 		// Log the error for debugging purposes
-		logger.Logger.Error("Invalid request payload", "error", err.Error())
+		logger.Logger.Warn("Invalid request payload", "error", err.Error())
 		return
 	}
 
 	exists, err := repository.UserIDExists(id)
 	if err != nil {
+		// set the content type and status code for the response
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(responses.APIResponse{
 			Status:  false,
 			Message: "Error checking user",
-			Data:    nil,
+			Data:    []models.User{},
 		})
 		// Log the error for debugging purposes
-		logger.Logger.Error("Failed to fetch users", "error", err.Error())
+		logger.Logger.Warn("Failed to fetch users", "error", err.Error())
 		return
 	}
 	if !exists {
+		// set the content type and status code for the response
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusNotFound)
 		json.NewEncoder(w).Encode(responses.APIResponse{
 			Status:  false,
 			Message: "User not found",
-			Data:    nil,
+			Data:    []models.User{},
 		})
 		return
 	}
@@ -319,46 +346,48 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	// Decode JSON request body into the UpdateUserRequest struct
 	req, err := requests.DecodeUpdateUserRequest(r)
 	if err != nil {
+		// set the content type and status code for the response
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 
 		json.NewEncoder(w).Encode(responses.APIResponse{
 			Status:  false,
 			Message: "Invalid request payload",
-			Data:    nil,
+			Data:    []models.User{},
 			// Error:   err.Error(),
 		})
-		logger.Logger.Error("Invalid request payload", "error", err.Error())
+		logger.Logger.Warn("Invalid request payload", "error", err.Error())
 		return
 	}
 
 	if err := validate.Struct(req); err != nil {
+		// set the content type and status code for the response
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(responses.APIResponse{
 			Status:  false,
 			Message: "Validation failed",
-			Data:    nil,
+			Data:    []models.User{},
 			Error:   err.Error(),
 		})
-		logger.Logger.Error("Validation failed", "error", err.Error())
+		logger.Logger.Warn("Validation failed", "error", err.Error())
 		return
 	}
 
 	req.ID = id
 	birthDate, err := time.Parse("2006-01-02", req.Birthdate)
 	if err != nil {
-		logger.Logger.Error("Invalid birthdate format", "error", err)
+		// set the content type and status code for the response
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 
 		json.NewEncoder(w).Encode(responses.APIResponse{
 			Status:  false,
 			Message: "Birthdate must be in YYYY-MM-DD format",
-			Data:    nil,
+			Data:    []models.User{},
 		})
 		// Log the error for debugging purposes
-		logger.Logger.Error("Invalid birthdate format", "error", err.Error())
+		logger.Logger.Warn("Invalid birthdate format", "error", err.Error())
 		return
 	}
 
@@ -373,17 +402,18 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	err = repository.UpdateUser(user)
 	if err != nil {
+		// set the content type and status code for the response
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
 
 		json.NewEncoder(w).Encode(responses.APIResponse{
 			Status:  false,
 			Message: "Error updating user",
-			Data:    nil,
+			Data:    []models.User{},
 			// Error:   err.Error(),
 		})
 		// Log the error for debugging purposes
-		logger.Logger.Error("Error updating user", "error", err.Error())
+		logger.Logger.Warn("Error updating user", "error", err.Error())
 		return
 	}
 
@@ -391,7 +421,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(responses.APIResponse{
 		Status:  true,
 		Message: "User updated successfully.",
-		Data:    user,
+		Data:    []models.User{user},
 	})
 }
 
@@ -416,54 +446,57 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	)
 
 	if err != nil {
+		// set the content type and status code for the response
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 
 		json.NewEncoder(w).Encode(responses.APIResponse{
 			Status:  false,
 			Message: "Invalid user ID",
-			Data:    nil,
+			Data:    []models.User{},
 			// Error:   err.Error(),
 		})
 		// Log the error for debugging purposes
-		logger.Logger.Error("Invalid user ID", "error", err.Error())
+		logger.Logger.Warn("Invalid user ID", "error", err.Error())
 		return
 	}
 
 	deleted, err := repository.DeleteUser(id)
 
 	if err != nil {
+		// set the content type and status code for the response
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
 
 		json.NewEncoder(w).Encode(responses.APIResponse{
 			Status:  false,
 			Message: "Error deleting user",
-			Data:    nil,
+			Data:    []models.User{},
 			// Error:   err.Error(),
 		})
-		logger.Logger.Error("Error deleting user", "error", err.Error())
+		logger.Logger.Warn("Error deleting user", "error", err.Error())
 		return
 	}
 
 	if !deleted {
+		// set the content type and status code for the response
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusNotFound)
 
 		json.NewEncoder(w).Encode(responses.APIResponse{
 			Status:  false,
 			Message: "User id not found",
-			Data:    nil,
+			Data:    []models.User{},
 		})
 		logger.Logger.Info("User id not found", "user_id", id)
 		return
 	}
-
+	// set the content type and status code for the response
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(responses.APIResponse{
 		Status:  true,
 		Message: "User deleted successfully.",
-		Data:    nil,
+		Data:    []models.User{},
 	})
 }
